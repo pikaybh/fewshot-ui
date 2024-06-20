@@ -1,9 +1,91 @@
 import streamlit as st
+# from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 import openai
 from random import sample
 import numpy as np
 from io import BytesIO
+import logging
+
+# Root 
+logger_name = "app"
+logger = logging.getLogger(logger_name)
+logger.setLevel(logging.DEBUG)
+# File Handler
+file_handler = logging.FileHandler(f'logs/{logger_name}.log', encoding='utf-8-sig')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter(r'%(asctime)s [%(name)s, line %(lineno)d] %(levelname)s: %(message)s'))
+logger.addHandler(file_handler)
+# Stream Handler
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+stream_handler.setFormatter(logging.Formatter(r'%(message)s'))
+logger.addHandler(stream_handler)
+
+# Streamlit UI
+st.set_page_config(
+    page_title='유해·위험 가이드 챗봇',
+    page_icon='https://i.namu.wiki/i/NgVoid2KU7eIGUnYVeZKBcfdydT9zq9_l69cYGpP1LwOFKn4nnbHe_OhsE3MWPcDtt6jqST_9tUSjyuNw3lNzw.svg',
+    initial_sidebar_state='collapsed'
+)
+st.title("Automatic rifle")
+st.write("If shots are examples, this app is automatic rifle!")
+# 로그인 상태 관리
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'user_id' not in st.session_state:
+    st.session_state.user_id = ''
+
+foo = '''
+# 페이지 새로고침을 사용하여 입력 포커스를 옮기기 위한 JavaScript 삽입
+st_autorefresh(interval=1000, key="focus_refresh")
+
+def add_js_code():
+    js_code = """
+    <script>
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            var nextElement = document.querySelector('input[name="Password"]');
+            if (nextElement) {
+                nextElement.focus();
+            }
+        } else if (event.key === 'Enter' && document.activeElement.name === 'Password') {
+            document.querySelector('button[aria-label="Login"]').click();
+        }
+    });
+    </script>
+    """
+    st.components.v1.html(js_code)
+
+add_js_code()
+'''
+# 사이드바에 프로필 섹션 추가
+with st.sidebar:
+    st.header("Profile Section")
+    if not st.session_state.get("logged_in"):
+        user_id = st.text_input("ID")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if user_id == st.secrets["admin"]["user"] and password == st.secrets["admin"]["password"]:  # 여기에 실제 인증 로직을 추가하세요
+                st.session_state.logged_in = True
+                st.session_state.user_id = user_id
+                st.session_state.api_key = st.secrets["OPENAI_API_KEY"]  # API Key를 세션 상태에 저장
+                logger.info(f"Logged in succefully!\nuser id: {user_id}")
+            else:
+                st.error("Invalid ID or Password")
+        # 로그인하지 않았을 때 API Key 입력 칸 추가
+        st.session_state.api_key = st.text_input("API Key", type="password")  
+        if st.button("Submit API Key") and not st.session_state.get("logged_in"):
+            st.write(f"Logged in with API Key: {st.session_state.api_key}")
+    else:
+        st.markdown(f"**환영합니다!**\n- ID | {st.session_state.user_id}\n- Rank | admin")
+    
+    # 사이드바에 모델 섹션 추가
+    st.header("Model Section")
+    model = st.selectbox("Select Model", ["gpt-3", "gpt-3.5-turbo", "gpt-4", "gpt-4o"])
+    num_shots = st.number_input("Number of Shots", min_value=1, max_value=100, value=3)
+    custom_prompt = st.text_area("Custom Prompt")
 
 # 엑셀 파일 업로드
 uploaded_file = st.file_uploader("Upload an Excel file", type=["xlsx", "xls"])
@@ -14,7 +96,6 @@ def replace_semicolon_with_comma(df):
 
 if uploaded_file is not None:
     df = pd.read_excel(uploaded_file)
-    # df = convert_columns_to_arrow_compatible(df)  # Arrow 호환을 위한 자동 수정 적용
     df = replace_semicolon_with_comma(df)
     st.write("DataFrame Loaded:")
     st.dataframe(df)
@@ -45,8 +126,8 @@ if uploaded_file is not None:
         # 공란을 채우기
         def fill_missing_values():
             for idx in df[df[output_column].isna()].index:
-                examples = df[df[output_column].notna()].sample(10)
-                prompt = "\n".join([f"{input_column}: {row[input_column]}, {output_column}: {row[output_column]}" for _, row in examples.iterrows()])
+                examples = df[df[output_column].notna()].sample(num_shots)
+                prompt = custom_prompt if custom_prompt else "\n".join([f"{input_column}: {row[input_column]}, {output_column}: {row[output_column]}" for _, row in examples.iterrows()])
                 messages = [
                     {
                         'role': 'system',
@@ -57,8 +138,9 @@ if uploaded_file is not None:
                         'content': f"{prompt}\n{input_column}: {df.at[idx, input_column]}, {output_column}:"
                     }
                 ]
+
                 response = openai.chat.completions.create(
-                    model="gpt-4o",
+                    model=model,
                     messages=messages
                 )
                 answer = response.choices[0].message.content.strip()
