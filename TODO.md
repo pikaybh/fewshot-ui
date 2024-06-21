@@ -1,0 +1,3 @@
+[] Restructure the architeture and perform OOP.
+[] Make prompt customizing work.
+[] Sleep well...
