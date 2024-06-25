@@ -59,7 +59,8 @@ class MySideBar:
     def zeroshot_model() -> Tuple[str]:
         st.header("Model Section")
         model = st.selectbox("Select Model", MySideBar.select_model())
-        custom_prompt = st.text_area("Custom Prompt", value="당신은 사고 사례를 특정 작업공사로 분류하는 고급 AI입니다. 사고 사례의 설명을 받게 되면, 이를 사전에 정의된 작업공사에 따라 분류하는 것이 당신의 임무입니다. 용어와 문맥을 이해하여 최상의 분류를 수행하세요. 대답은 각설하고 해당하는 작업공사만 답합니다. 다음은 분류해야 할 작업공사 목록입니다:", height=250)
+        custom_prompt = st.text_area("Custom Prompt", value="당신은 사고 사례를 특정 작업공사로 분류하는 고급 AI입니다. 사고 사례의 설명을 받게 되면, 이를 사전에 정의된 작업공사에 따라 분류하는 것이 당신의 임무입니다. 용어와 문맥을 이해하여 최상의 분류를 수행하세요. 대답은 각설하고 해당하는 작업공사만 답합니다. 주어진 목록 중에서 분류를 할 수 없는 경우 무작위로 선택하시오. 다음은 분류해야 할 작업공사 목록입니다:", height=250)
+        custom_prompt += "\n\n" + st.text_area("Classes")
         return model, custom_prompt
 
     @staticmethod

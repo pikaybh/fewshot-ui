@@ -78,24 +78,28 @@ def zero_shot_page():
             progress_bar = st.progress(0)
 
             # Messages
-            messages: List[Message] = [Message(
+            messages: List[Message] = [
+                Message(
                     **{
                         'role': 'system',
                         'content': custom_prompt
                     }
-                )]
+                )
+            ]
             
             # 공란을 채우기
             def fill_missing_values():
                 for idx in df[df[output_column].isna()].index:
                     tmp_messages: List[Message] = deepcopy(messages)
                     
-                    tmp_messages.append(Message(
+                    tmp_messages.append(
+                        Message(
                                 **{
                                     'role': 'user',
                                     'content': f"{input_column}: {df.at[idx, input_column]}\n{output_column}:"
                                 }
-                            ))
+                            )
+                        )
                     
                     # Get response
                     response = openai.chat.completions.create(
@@ -104,7 +108,7 @@ def zero_shot_page():
                     )
                     answer = response.choices[0].message.content.strip()
                     tmp_messages.append(
-                            Message(
+                        Message(
                             **{
                                 'role': response.choices[0].message.role,
                                 'content': response.choices[0].message.content
