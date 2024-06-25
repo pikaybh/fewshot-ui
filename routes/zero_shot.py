@@ -91,7 +91,6 @@ def zero_shot_page():
             def fill_missing_values():
                 for idx in df[df[output_column].isna()].index:
                     tmp_messages: List[Message] = deepcopy(messages)
-                    
                     tmp_messages.append(
                         Message(
                                 **{
@@ -100,7 +99,6 @@ def zero_shot_page():
                                 }
                             )
                         )
-                    
                     # Get response
                     response = openai.chat.completions.create(
                         model=model,
@@ -116,7 +114,6 @@ def zero_shot_page():
                         )
                     )
                     df.at[idx, output_column] = answer.split(f"{output_column}: ")[-1] if f"{output_column}: " in answer else answer
-
                     # Log the assistant message
                     for idx, message in enumerate(tmp_messages):
                         __log : str = ""
