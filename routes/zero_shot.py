@@ -124,14 +124,14 @@ def zero_shot_page():
                             if k == "role":
                                 __log += f"[{idx}] {v}: "
                             elif k == "content":
-                                logger.info(__log + v)
+                                logger.debug(__log + v)
                             else:
                                 raise ValueError("Unexpected Error.")
                     
                     # 진행 상황 업데이트
                     progress = (df[output_column].notna().sum() / (filled_count + empty_count))
                     progress_bar.progress(progress) 
-                    st.write(f"Progress: {df[output_column].notna().sum()} / {filled_count + empty_count}")
+                    # st.write(f"Progress: {df[output_column].notna().sum()} / {filled_count + empty_count}")
             
             fill_missing_values()
             

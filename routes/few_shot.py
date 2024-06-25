@@ -140,7 +140,7 @@ def few_shot_page():
                     # 진행 상황 업데이트
                     progress = (df[output_column].notna().sum() / (filled_count + empty_count))
                     progress_bar.progress(progress) 
-                    st.write(f"Progress: {df[output_column].notna().sum()} / {filled_count + empty_count}")
+                    # st.write(f"Progress: {df[output_column].notna().sum()} / {filled_count + empty_count}")
             
             fill_missing_values()
             
