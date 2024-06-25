@@ -1,3 +1,3 @@
-- [ ] Restructure the architeture and perform OOP.
-- [ ] Make prompt customizing work.
+- [x] Restructure the architeture and perform OOP.
+- [x] Make prompt customizing work.
 - [ ] Sleep well...
