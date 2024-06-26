@@ -1,7 +1,6 @@
 # Fewshot UI
 
-대충 반갑다 여기 링크로 접속해라:
-the url
+Fewshot-learning Interface: https://fewshotui.streamlit.app/
 
 ## Patch Notes
 
