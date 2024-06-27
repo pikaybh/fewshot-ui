@@ -48,6 +48,7 @@ class MySideBar:
                     logger.info(f"Logged in succefully!\nuser id: {user_id}")
                 else:
                     st.error("Invalid ID or Password")
+                st.rerun()
             # 로그인하지 않았을 때 API Key 입력 칸 추가
             st.session_state.api_key = st.text_input("API Key", type="password")  
             if st.button("Submit API Key") and not st.session_state.get("logged_in"):
